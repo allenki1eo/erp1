@@ -5,7 +5,7 @@ import { and, eq, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import {
-  vehicles, drivers, fuelLogs, maintenanceRecords, spareParts, spareIssues, vehicleDocuments,
+  vehicles, drivers, fuelLogs, fuelStations, maintenanceRecords, spareParts, spareIssues, vehicleDocuments,
   companies,
 } from "@/db/schema";
 import { getActiveCompanyId } from "@/lib/tenant";
@@ -126,12 +126,58 @@ export async function deleteDriver(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+// ============ FUEL STATIONS ============
+const FuelStationSchema = z.object({
+  id: z.string().optional(),
+  ownerCompanyId: z.string().min(1),
+  name: z.string().min(1),
+  type: z.enum(["INTERNAL", "EXTERNAL"]).default("EXTERNAL"),
+  address: z.string().optional(),
+  fuelType: z.enum(["DIESEL", "PETROL", "ELECTRIC", "HYBRID"]).default("DIESEL"),
+  tankCapacityLitres: z.preprocess((v) => (v === "" || v == null ? undefined : Number(v)), z.number().optional()),
+  currentVolumeLitres: z.preprocess((v) => (v === "" || v == null ? 0 : Number(v)), z.number()).default(0),
+  isActive: z.preprocess((v) => v === "on" || v === true || v === "true", z.boolean()).default(true),
+});
+
+export async function listFuelStations() {
+  const { all, companyId } = await transportScope();
+  const base = db.select({ station: fuelStations, company: { id: companies.id, name: companies.name } })
+    .from(fuelStations)
+    .leftJoin(companies, eq(fuelStations.ownerCompanyId, companies.id));
+  if (all) return base.orderBy(fuelStations.name);
+  if (!companyId) return [];
+  return base.where(eq(fuelStations.ownerCompanyId, companyId)).orderBy(fuelStations.name);
+}
+
+export async function upsertFuelStation(_: ActionResult | null, formData: FormData): Promise<ActionResult> {
+  await requirePermission(PERMISSIONS.TRANSPORT_MANAGE);
+  const parsed = fromFormData(FuelStationSchema, formData);
+  if (!parsed.success) return errorFromParse(parsed);
+  const { id, ...data } = parsed.data;
+  if (id) {
+    await db.update(fuelStations).set(data).where(eq(fuelStations.id, id));
+  } else {
+    await db.insert(fuelStations).values(data);
+  }
+  revalidatePath("/transport/fuel-stations");
+  return { ok: true };
+}
+
+export async function deleteFuelStation(id: string): Promise<ActionResult> {
+  await requirePermission(PERMISSIONS.TRANSPORT_MANAGE);
+  await db.delete(fuelStations).where(eq(fuelStations.id, id));
+  revalidatePath("/transport/fuel-stations");
+  return { ok: true };
+}
+
 // ============ FUEL LOGS ============
 const FuelSchema = z.object({
   id: z.string().optional(),
   ownerCompanyId: z.string().min(1),
   vehicleId: z.string().min(1, "Vehicle is required"),
   driverId: z.string().optional().or(z.literal("")).transform((v) => v || undefined),
+  fuelStationId: z.string().optional().or(z.literal("")).transform((v) => v || undefined),
+  stationType: z.enum(["INTERNAL", "EXTERNAL"]).default("EXTERNAL"),
   filledAt: z.preprocess((v) => new Date(String(v)), z.date()),
   station: z.string().optional(),
   litres: z.preprocess((v) => Number(v), z.number().positive()),
@@ -170,12 +216,21 @@ export async function upsertFuelLog(_: ActionResult | null, formData: FormData):
     await db.update(fuelLogs).set({ ...data, totalCost }).where(eq(fuelLogs.id, id));
   } else {
     await db.insert(fuelLogs).values({ ...data, totalCost });
-    // bump vehicle odometer if higher
     await db.update(vehicles)
       .set({ currentOdometer: data.odometer })
-      .where(and(eq(vehicles.id, data.vehicleId)));
+      .where(eq(vehicles.id, data.vehicleId));
+    // Deduct from internal station tank if applicable
+    if (data.fuelStationId && data.stationType === "INTERNAL") {
+      const [station] = await db.select().from(fuelStations).where(eq(fuelStations.id, data.fuelStationId));
+      if (station) {
+        await db.update(fuelStations)
+          .set({ currentVolumeLitres: Math.max(0, station.currentVolumeLitres - data.litres) })
+          .where(eq(fuelStations.id, data.fuelStationId));
+      }
+    }
   }
   revalidatePath("/transport/fuel");
+  revalidatePath("/transport/fuel-stations");
   return { ok: true };
 }
 

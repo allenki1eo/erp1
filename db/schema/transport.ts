@@ -58,11 +58,25 @@ export const vehicleAssignments = sqliteTable("vehicle_assignment", {
   notes: text("notes"),
 });
 
+export const fuelStations = sqliteTable("fuel_station", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  ownerCompanyId: text("owner_company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  type: text("type").notNull().default("EXTERNAL"),  // INTERNAL, EXTERNAL
+  address: text("address"),
+  fuelType: text("fuel_type").notNull().default("DIESEL"),
+  tankCapacityLitres: real("tank_capacity_litres"),
+  currentVolumeLitres: real("current_volume_litres").notNull().default(0),
+  isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+});
+
 export const fuelLogs = sqliteTable("fuel_log", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   ownerCompanyId: text("owner_company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
   vehicleId: text("vehicle_id").notNull().references(() => vehicles.id),
   driverId: text("driver_id").references(() => drivers.id),
+  fuelStationId: text("fuel_station_id").references(() => fuelStations.id),
+  stationType: text("station_type").notNull().default("EXTERNAL"),  // INTERNAL, EXTERNAL
   filledAt: integer("filled_at", { mode: "timestamp_ms" }).notNull(),
   station: text("station"),
   litres: real("litres").notNull(),

@@ -20,6 +20,8 @@ type FuelLog = {
   ownerCompanyId: string;
   vehicleId: string;
   driverId: string | null;
+  fuelStationId: string | null;
+  stationType: string;
   filledAt: Date;
   station: string | null;
   litres: number;
@@ -37,17 +39,19 @@ function toDateInput(d?: Date | null) {
 }
 
 export function FuelDialog({
-  log, vehicles, drivers, companies, defaultCompanyId,
+  log, vehicles, drivers, fuelStationsList, companies, defaultCompanyId,
 }: {
   log?: FuelLog;
   vehicles: { id: string; registrationNumber: string; ownerCompanyId: string }[];
   drivers: { id: string; fullName: string; ownerCompanyId: string }[];
+  fuelStationsList: { id: string; name: string; type: string; ownerCompanyId: string }[];
   companies: { id: string; name: string }[];
   defaultCompanyId?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const [state, action] = useActionState(upsertFuelLog, null);
   const [companyId, setCompanyId] = useState(log?.ownerCompanyId ?? defaultCompanyId ?? "");
+  const [stationType, setStationType] = useState(log?.stationType ?? "EXTERNAL");
 
   useEffect(() => {
     if (state?.ok) {
@@ -58,6 +62,9 @@ export function FuelDialog({
 
   const filteredVehicles = companyId ? vehicles.filter((v) => v.ownerCompanyId === companyId) : vehicles;
   const filteredDrivers = companyId ? drivers.filter((d) => d.ownerCompanyId === companyId) : drivers;
+  const filteredStations = fuelStationsList.filter((s) =>
+    s.type === stationType && (!companyId || s.ownerCompanyId === companyId)
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -111,6 +118,35 @@ export function FuelDialog({
               <Input id="filledAt" name="filledAt" type="datetime-local" defaultValue={toDateInput(log?.filledAt) || new Date().toISOString().slice(0, 16)} required />
             </div>
           </div>
+          {/* Station type + station selector */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="stationType">Station type *</Label>
+              <Select name="stationType" value={stationType} onValueChange={setStationType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="INTERNAL">Internal (our station)</SelectItem>
+                  <SelectItem value="EXTERNAL">External (3rd party)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {stationType === "INTERNAL" ? (
+              <div>
+                <Label htmlFor="fuelStationId">Our station *</Label>
+                <Select name="fuelStationId" defaultValue={log?.fuelStationId ?? ""}>
+                  <SelectTrigger><SelectValue placeholder="Select station" /></SelectTrigger>
+                  <SelectContent>
+                    {filteredStations.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div>
+                <Label htmlFor="station">Station name</Label>
+                <Input id="station" name="station" defaultValue={log?.station ?? ""} placeholder="e.g. PUMA Morogoro Rd" />
+              </div>
+            )}
+          </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div><Label htmlFor="litres">Litres *</Label><Input id="litres" name="litres" type="number" step="0.01" defaultValue={log?.litres ?? ""} required /></div>
             <div><Label htmlFor="pricePerLitre">Price / L *</Label><Input id="pricePerLitre" name="pricePerLitre" type="number" step="0.01" defaultValue={log?.pricePerLitre ?? ""} required /></div>
@@ -124,7 +160,6 @@ export function FuelDialog({
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div><Label htmlFor="station">Station</Label><Input id="station" name="station" defaultValue={log?.station ?? ""} /></div>
             <div><Label htmlFor="receiptNumber">Receipt no.</Label><Input id="receiptNumber" name="receiptNumber" defaultValue={log?.receiptNumber ?? ""} /></div>
           </div>
           <div>

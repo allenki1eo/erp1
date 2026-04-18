@@ -2,7 +2,8 @@ import {
   LayoutDashboard, Building2, Warehouse, Package, BookOpen, Users, Truck,
   ShoppingCart, FileText, Beaker, FlaskConical, Wine, Boxes, ClipboardCheck,
   Receipt, Wallet, BarChart3, Settings, Route as RouteIcon, UserCircle,
-  Car, Fuel, Wrench, Cog, FileBadge, type LucideIcon,
+  Car, Fuel, Wrench, Cog, FileBadge, Layers, ArrowLeftRight, ScanLine,
+  ClipboardList, MapPin, type LucideIcon,
 } from "lucide-react";
 
 export type NavLeaf = { label: string; href: string; icon?: LucideIcon };
@@ -47,17 +48,21 @@ export const NAV: NavSection[] = [
         label: "Procurement",
         icon: ShoppingCart,
         items: [
+          { label: "Requisitions", href: "/procurement/purchase-requisitions" },
           { label: "Purchase Orders", href: "/procurement/purchase-orders" },
           { label: "Goods Receipts", href: "/procurement/goods-receipts" },
+          { label: "Supplier Invoices", href: "/procurement/supplier-invoices" },
         ],
       },
       {
         label: "Inventory",
         icon: Boxes,
         items: [
-          { label: "Stock", href: "/inventory/stock" },
-          { label: "Batches", href: "/inventory/batches" },
+          { label: "Stock Balance", href: "/inventory/stock" },
+          { label: "Lots & Batches", href: "/inventory/batches" },
           { label: "Transfers", href: "/inventory/transfers" },
+          { label: "Stock Takes", href: "/inventory/stock-takes" },
+          { label: "Bin Locations", href: "/inventory/bins" },
         ],
       },
       {
@@ -111,6 +116,7 @@ export const NAV: NavSection[] = [
           { label: "Vehicles", href: "/transport/vehicles" },
           { label: "Drivers", href: "/transport/drivers" },
           { label: "Fuel Logs", href: "/transport/fuel" },
+          { label: "Fuel Stations", href: "/transport/fuel-stations" },
           { label: "Maintenance", href: "/transport/maintenance" },
           { label: "Spares", href: "/transport/spares" },
           { label: "Documents", href: "/transport/documents" },
@@ -132,5 +138,6 @@ export const ICONS = {
   LayoutDashboard, Building2, Warehouse, Package, BookOpen, Users, Truck,
   ShoppingCart, FileText, Beaker, FlaskConical, Wine, Boxes, ClipboardCheck,
   Receipt, Wallet, BarChart3, Settings, Route: RouteIcon, UserCircle,
-  Car, Fuel, Wrench, Cog, FileBadge,
+  Car, Fuel, Wrench, Cog, FileBadge, Layers, ArrowLeftRight, ScanLine,
+  ClipboardList, MapPin,
 };
