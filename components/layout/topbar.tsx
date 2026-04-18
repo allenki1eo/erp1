@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CompanySwitcher } from "./company-switcher";
+import { MobileNav } from "./mobile-nav";
 import { signOut } from "@/lib/auth";
 import { getCurrentUser, getUserCompanies, getActiveCompanyId } from "@/lib/tenant";
 import { Button } from "@/components/ui/button";
@@ -11,14 +12,17 @@ export async function Topbar() {
   const activeId = await getActiveCompanyId();
 
   return (
-    <header className="flex h-14 items-center justify-between border-b bg-background px-6">
-      <CompanySwitcher
-        companies={companies.map((c) => ({ id: c.company.id, name: c.company.name }))}
-        activeId={activeId}
-      />
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b bg-background px-3 sm:px-6">
+      <div className="flex items-center gap-2 min-w-0">
+        <MobileNav />
+        <CompanySwitcher
+          companies={companies.map((c) => ({ id: c.company.id, name: c.company.name }))}
+          activeId={activeId}
+        />
+      </div>
 
-      <div className="flex items-center gap-3">
-        <div className="text-right text-sm">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className="hidden text-right text-sm sm:block">
           <div className="font-medium">{user?.name ?? user?.email}</div>
           <div className="text-xs text-muted-foreground">{user?.email}</div>
         </div>

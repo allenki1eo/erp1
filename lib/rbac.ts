@@ -10,9 +10,11 @@ export const PERMISSIONS = {
   PRODUCTION_MANAGE: "production:manage",
   QUALITY_MANAGE: "quality:manage",
   SALES_MANAGE: "sales:manage",
-  SALES_OWN: "sales:own",                 // sales rep limited to own data
+  SALES_OWN: "sales:own",
   FINANCE_MANAGE: "finance:manage",
   REPORTS_VIEW: "reports:view",
+  TRANSPORT_MANAGE: "transport:manage",
+  TRANSPORT_CROSS_COMPANY: "transport:cross_company",
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -32,6 +34,11 @@ export const ROLE_PRESETS: Record<string, Permission[]> = {
   SALES_MANAGER: [PERMISSIONS.SALES_MANAGE, PERMISSIONS.REPORTS_VIEW],
   SALES_REP: [PERMISSIONS.SALES_OWN],
   FINANCE: [PERMISSIONS.FINANCE_MANAGE, PERMISSIONS.REPORTS_VIEW],
+  TRANSPORT_OFFICER: [
+    PERMISSIONS.TRANSPORT_MANAGE,
+    PERMISSIONS.TRANSPORT_CROSS_COMPANY,
+    PERMISSIONS.REPORTS_VIEW,
+  ],
 };
 
 export async function hasPermission(perm: Permission): Promise<boolean> {
@@ -44,4 +51,8 @@ export async function hasPermission(perm: Permission): Promise<boolean> {
 export async function requirePermission(perm: Permission) {
   const ok = await hasPermission(perm);
   if (!ok) throw new Error(`Forbidden: missing ${perm}`);
+}
+
+export async function canSeeAllCompaniesTransport(): Promise<boolean> {
+  return hasPermission(PERMISSIONS.TRANSPORT_CROSS_COMPANY);
 }
