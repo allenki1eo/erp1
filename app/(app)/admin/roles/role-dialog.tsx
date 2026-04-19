@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { FormError } from "@/components/crud/form-error";
 import { SubmitButton } from "@/components/crud/submit-button";
 import { upsertRole } from "@/server/actions/admin";
-import { PERMISSIONS } from "@/lib/rbac";
+import { PERMISSIONS } from "@/lib/permissions";
 
 const PERM_GROUPS: { label: string; perms: { key: string; label: string }[] }[] = [
   {
