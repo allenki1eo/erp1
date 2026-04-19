@@ -1,11 +1,11 @@
 "use server";
 
 import { z } from "zod";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { companies } from "@/db/schema";
-import { getCurrentUser, getActiveCompanyId } from "@/lib/tenant";
+import { companies, userCompanies } from "@/db/schema";
+import { getActiveCompanyId, getCurrentUser } from "@/lib/tenant";
 import { requirePermission, PERMISSIONS } from "@/lib/rbac";
 import { errorFromParse, fromFormData, type ActionResult } from "@/lib/actions";
 
@@ -23,6 +23,23 @@ const UpsertSchema = z.object({
   logoUrl: z.string().optional(),
   isActive: z.preprocess((v) => v === "on" || v === true || v === "true", z.boolean()).default(true),
 });
+
+export async function getActiveCompany() {
+  const id = await getActiveCompanyId();
+  if (!id) return null;
+  const [row] = await db.select().from(companies).where(eq(companies.id, id));
+  return row ?? null;
+}
+
+export async function listMyCompanies() {
+  const user = await getCurrentUser();
+  if (!user) return [];
+  return db.select({ company: companies, link: userCompanies })
+    .from(userCompanies)
+    .innerJoin(companies, eq(userCompanies.companyId, companies.id))
+    .where(eq(userCompanies.userId, user.id))
+    .orderBy(companies.name);
+}
 
 export async function listAllCompanies() {
   await requirePermission(PERMISSIONS.COMPANY_MANAGE);
@@ -47,18 +64,18 @@ export async function upsertCompany(_: ActionResult | null, formData: FormData):
     await db.insert(companies).values(data);
   }
   revalidatePath("/masters/companies");
+  revalidatePath("/settings");
   return { ok: true };
 }
 
 export async function deleteCompany(id: string): Promise<ActionResult> {
   await requirePermission(PERMISSIONS.COMPANY_MANAGE);
-  
-  // Prevent deleting the currently active company
+
   const activeCompanyId = await getActiveCompanyId();
   if (id === activeCompanyId) {
     return { ok: false, error: "Cannot delete the currently active company" };
   }
-  
+
   await db.delete(companies).where(eq(companies.id, id));
   revalidatePath("/masters/companies");
   return { ok: true };
