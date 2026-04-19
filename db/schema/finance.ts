@@ -2,7 +2,7 @@ import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 import { companies } from "./companies";
 
-export const accounts = sqliteTable("ledger_account", {
+export const ledgerAccounts = sqliteTable("ledger_account", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   companyId: text("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
   code: text("code").notNull(),
@@ -28,7 +28,7 @@ export const journals = sqliteTable("journal_entry", {
 export const journalLines = sqliteTable("journal_line", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   journalId: text("journal_id").notNull().references(() => journals.id, { onDelete: "cascade" }),
-  accountId: text("account_id").notNull().references(() => accounts.id),
+  accountId: text("account_id").notNull().references(() => ledgerAccounts.id),
   debit: real("debit").notNull().default(0),
   credit: real("credit").notNull().default(0),
   description: text("description"),

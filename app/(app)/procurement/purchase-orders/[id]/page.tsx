@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { DeleteButton } from "@/components/crud/delete-button";
-import { SubmitButton } from "@/components/crud/submit-button";
+import { ActionButton } from "@/components/crud/action-button";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
 import {
   getPO,
@@ -118,9 +118,13 @@ export default async function PODetailPage({ params }: { params: Promise<{ id: s
               />
             )}
             {po.status === "DRAFT" && (
-              <form action={approvePO.bind(null, po.id)}>
-                <SubmitButton size="sm">Approve PO</SubmitButton>
-              </form>
+              <ActionButton
+                action={approvePO.bind(null, po.id)}
+                size="sm"
+                successMessage="PO approved"
+              >
+                Approve PO
+              </ActionButton>
             )}
           </div>
         </CardContent>

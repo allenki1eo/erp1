@@ -19,8 +19,8 @@ type PRLine = {
   description: string;
   qty: number;
   uom: string;
-  estimatedUnitCost: number;
-  estimatedTotal: number;
+  estimatedUnitCost: number | null;
+  estimatedTotal: number | null;
   productId: string | null;
   status: string;
 };

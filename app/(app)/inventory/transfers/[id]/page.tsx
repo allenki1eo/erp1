@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DeleteButton } from "@/components/crud/delete-button";
-import { SubmitButton } from "@/components/crud/submit-button";
+import { ActionButton } from "@/components/crud/action-button";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
 import { getTransfer, deleteTransferLine, confirmTransfer } from "@/server/actions/inventory";
 import { listProductsForSelect, listWarehousesForSelect } from "@/server/actions/procurement";
@@ -37,8 +37,6 @@ export default async function TransferDetailPage({
 
   const fromWarehouse = warehouses.find((w) => w.id === t.fromWarehouseId);
   const toWarehouse = warehouses.find((w) => w.id === t.toWarehouseId);
-
-  const confirmAction = confirmTransfer.bind(null, t.id);
 
   return (
     <div className="space-y-6">
@@ -77,9 +75,12 @@ export default async function TransferDetailPage({
               )}
             </div>
             {t.status === "DRAFT" && (
-              <form action={confirmAction}>
-                <SubmitButton variant="default">Confirm Transfer</SubmitButton>
-              </form>
+              <ActionButton
+                action={confirmTransfer.bind(null, t.id)}
+                successMessage="Transfer confirmed"
+              >
+                Confirm Transfer
+              </ActionButton>
             )}
           </div>
         </CardHeader>
