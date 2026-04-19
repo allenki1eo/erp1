@@ -145,6 +145,14 @@ export const NAV: NavSection[] = [
     label: "System",
     entries: [
       { label: "Reports", href: "/reports", icon: BarChart3 },
+      {
+        label: "Administration",
+        icon: ShieldCheck,
+        items: [
+          { label: "Users", href: "/admin/users" },
+          { label: "Roles & permissions", href: "/admin/roles" },
+        ],
+      },
       { label: "Settings", href: "/settings", icon: Settings },
     ],
   },
