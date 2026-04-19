@@ -3,7 +3,7 @@ import {
   ShoppingCart, FileText, Beaker, FlaskConical, Wine, Boxes, ClipboardCheck,
   Receipt, Wallet, BarChart3, Settings, Route as RouteIcon, UserCircle,
   Car, Fuel, Wrench, Cog, FileBadge, Layers, ArrowLeftRight, ScanLine,
-  ClipboardList, MapPin, type LucideIcon,
+  ClipboardList, MapPin, ShieldCheck, type LucideIcon,
 } from "lucide-react";
 
 export type NavLeaf = { label: string; href: string; icon?: LucideIcon };
@@ -78,7 +78,23 @@ export const NAV: NavSection[] = [
       {
         label: "Quality",
         icon: ClipboardCheck,
-        items: [{ label: "QC Checks", href: "/quality" }],
+        items: [
+          { label: "QC Checks", href: "/quality" },
+          { label: "Check Templates", href: "/quality/templates" },
+          { label: "Non-Conformances", href: "/quality/non-conformance" },
+          { label: "Hold / Release", href: "/quality/batches" },
+        ],
+      },
+      {
+        label: "Excise & Regulatory",
+        icon: ShieldCheck,
+        items: [
+          { label: "Dashboard", href: "/excise" },
+          { label: "Excise Rates", href: "/excise/rates" },
+          { label: "Tax Stamps", href: "/excise/stamps" },
+          { label: "Bonded Warehouse", href: "/excise/bonded" },
+          { label: "Declarations", href: "/excise/declarations" },
+        ],
       },
     ],
   },

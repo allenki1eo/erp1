@@ -5,6 +5,7 @@ export * from "./inventory";
 export * from "./procurement";
 export * from "./production";
 export * from "./quality";
+export * from "./excise";
 export * from "./sales";
 export * from "./finance";
 export * from "./transport";
