@@ -20,8 +20,8 @@ yarn-error.log*
 
 # drizzle
 drizzle/meta
-*.db
-*.db-journal
+.db
+.db-journal
 
 # IDE
 .vscode
