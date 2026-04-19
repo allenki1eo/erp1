@@ -1,8 +1,8 @@
 /**
  * Initial seed: one admin user, one company, role presets, default tax codes.
- * Run with: pnpm db:seed (or npm run db:seed)
+ * Run with: npm run db:seed
+ * Requires TURSO_DATABASE_URL and TURSO_AUTH_TOKEN in the environment.
  */
-import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import {
@@ -13,6 +13,13 @@ import { ROLE_PRESETS } from "@/lib/rbac";
 async function main() {
   const adminEmail = "admin@example.com";
   const adminPassword = "admin12345";
+
+  const { eq } = await import("drizzle-orm");
+  const existingAdmin = await db.select().from(users).where(eq(users.email, adminEmail)).limit(1);
+  if (existingAdmin.length) {
+    console.log("Seed already applied (admin exists). Nothing to do.");
+    return;
+  }
 
   console.log("Seeding admin user...");
   const passwordHash = await bcrypt.hash(adminPassword, 10);
