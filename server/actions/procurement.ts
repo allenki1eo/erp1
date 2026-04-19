@@ -27,19 +27,35 @@ const strOpt = z.string().optional().or(z.literal("")).transform((v) => v || und
 async function nextNumber(table: "PR" | "PO" | "GRN" | "SI", companyId: string): Promise<string> {
   const year = new Date().getFullYear();
   const prefix = `${table}-${year}-`;
-  let tableName: typeof purchaseRequisitions | typeof purchaseOrders | typeof goodsReceipts | typeof supplierInvoices;
-  let col: typeof purchaseRequisitions.number;
-  if (table === "PR") { tableName = purchaseRequisitions; col = purchaseRequisitions.number; }
-  else if (table === "PO") { tableName = purchaseOrders; col = purchaseOrders.number; }
-  else if (table === "GRN") { tableName = goodsReceipts; col = goodsReceipts.number; }
-  else { tableName = supplierInvoices; col = supplierInvoices.ourRef; }
+  const likePattern = prefix + "%";
 
-  const rows = await db.select({ n: col }).from(tableName)
-    .where(and(eq(tableName.companyId, companyId), sql`${col} LIKE ${prefix + "%"}`));
-  const max = rows.reduce((m, r) => {
-    const seq = parseInt(r.n.split("-").pop() ?? "0", 10);
-    return seq > m ? seq : m;
-  }, 0);
+  async function maxSeq(existing: string[]): Promise<number> {
+    return existing.reduce((m, n) => {
+      const seq = parseInt(n.split("-").pop() ?? "0", 10);
+      return seq > m ? seq : m;
+    }, 0);
+  }
+
+  let existing: string[];
+  if (table === "PR") {
+    const rows = await db.select({ n: purchaseRequisitions.number }).from(purchaseRequisitions)
+      .where(and(eq(purchaseRequisitions.companyId, companyId), sql`${purchaseRequisitions.number} LIKE ${likePattern}`));
+    existing = rows.map((r) => r.n);
+  } else if (table === "PO") {
+    const rows = await db.select({ n: purchaseOrders.number }).from(purchaseOrders)
+      .where(and(eq(purchaseOrders.companyId, companyId), sql`${purchaseOrders.number} LIKE ${likePattern}`));
+    existing = rows.map((r) => r.n);
+  } else if (table === "GRN") {
+    const rows = await db.select({ n: goodsReceipts.number }).from(goodsReceipts)
+      .where(and(eq(goodsReceipts.companyId, companyId), sql`${goodsReceipts.number} LIKE ${likePattern}`));
+    existing = rows.map((r) => r.n);
+  } else {
+    const rows = await db.select({ n: supplierInvoices.ourRef }).from(supplierInvoices)
+      .where(and(eq(supplierInvoices.companyId, companyId), sql`${supplierInvoices.ourRef} LIKE ${likePattern}`));
+    existing = rows.map((r) => r.n);
+  }
+
+  const max = await maxSeq(existing);
   return `${prefix}${String(max + 1).padStart(4, "0")}`;
 }
 

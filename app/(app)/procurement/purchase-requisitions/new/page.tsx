@@ -7,13 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { SubmitButton } from "@/components/crud/submit-button";
 import { createPR } from "@/server/actions/procurement";
 
-async function createAndRedirect(_: unknown, formData: FormData) {
+async function createAndRedirect(formData: FormData) {
   "use server";
   const result = await createPR(null, formData);
   if (result.ok) {
     redirect("/procurement/purchase-requisitions");
   }
-  return result;
 }
 
 export default function NewPurchaseRequisitionPage() {

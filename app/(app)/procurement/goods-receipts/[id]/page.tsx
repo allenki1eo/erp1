@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { DeleteButton } from "@/components/crud/delete-button";
-import { SubmitButton } from "@/components/crud/submit-button";
+import { ActionButton } from "@/components/crud/action-button";
 import { formatDate, formatCurrency, formatNumber } from "@/lib/utils";
 import {
   getGRN, deleteGRNLine, confirmGRN,
@@ -110,9 +110,13 @@ export default async function GRNDetailPage({ params }: { params: Promise<{ id: 
                   pos={pos}
                 />
                 {lines.length > 0 && (
-                  <form action={confirmGRN.bind(null, id)}>
-                    <SubmitButton size="sm">Confirm GRN</SubmitButton>
-                  </form>
+                  <ActionButton
+                    action={confirmGRN.bind(null, id)}
+                    size="sm"
+                    successMessage="GRN confirmed"
+                  >
+                    Confirm GRN
+                  </ActionButton>
                 )}
               </>
             )}

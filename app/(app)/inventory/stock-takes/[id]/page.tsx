@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { SubmitButton } from "@/components/crud/submit-button";
+import { ActionButton } from "@/components/crud/action-button";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
 import { getStockTake, confirmStockTake } from "@/server/actions/inventory";
 import { StockTakeLineDialog } from "./stock-take-line-dialog";
@@ -31,7 +31,6 @@ export default async function StockTakeDetailPage({
   if (!data) return notFound();
 
   const { st, lines } = data;
-  const confirmAction = confirmStockTake.bind(null, st.id);
 
   const totalVarianceCost = lines.reduce(
     (s, { line }) => s + (line.varianceCost ?? 0),
@@ -70,9 +69,12 @@ export default async function StockTakeDetailPage({
               )}
             </div>
             {st.status !== "CONFIRMED" && (
-              <form action={confirmAction}>
-                <SubmitButton variant="default">Confirm Stock Take</SubmitButton>
-              </form>
+              <ActionButton
+                action={confirmStockTake.bind(null, st.id)}
+                successMessage="Stock take confirmed"
+              >
+                Confirm Stock Take
+              </ActionButton>
             )}
           </div>
         </CardHeader>

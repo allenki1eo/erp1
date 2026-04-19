@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { DeleteButton } from "@/components/crud/delete-button";
-import { SubmitButton } from "@/components/crud/submit-button";
+import { ActionButton } from "@/components/crud/action-button";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
   getPR,
@@ -96,14 +96,23 @@ export default async function PRDetailPage({ params }: { params: Promise<{ id: s
           {/* Status workflow buttons */}
           <div className="mt-4 flex gap-2">
             {pr.status === "DRAFT" && (
-              <form action={submitPR.bind(null, pr.id)}>
-                <SubmitButton variant="outline" size="sm">Submit for Approval</SubmitButton>
-              </form>
+              <ActionButton
+                action={submitPR.bind(null, pr.id)}
+                variant="outline"
+                size="sm"
+                successMessage="Submitted for approval"
+              >
+                Submit for Approval
+              </ActionButton>
             )}
             {pr.status === "SUBMITTED" && (
-              <form action={approvePR.bind(null, pr.id)}>
-                <SubmitButton size="sm">Approve</SubmitButton>
-              </form>
+              <ActionButton
+                action={approvePR.bind(null, pr.id)}
+                size="sm"
+                successMessage="Approved"
+              >
+                Approve
+              </ActionButton>
             )}
           </div>
         </CardContent>
@@ -148,10 +157,10 @@ export default async function PRDetailPage({ params }: { params: Promise<{ id: s
                     <TableCell className="text-right">{line.qty}</TableCell>
                     <TableCell>{line.uom}</TableCell>
                     <TableCell className="hidden md:table-cell text-right">
-                      {formatCurrency(line.estimatedUnitCost)}
+                      {formatCurrency(line.estimatedUnitCost ?? 0)}
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      {formatCurrency(line.estimatedTotal)}
+                      {formatCurrency(line.estimatedTotal ?? 0)}
                     </TableCell>
                     <TableCell><LineStatusBadge status={line.status} /></TableCell>
                     <TableCell className="text-right">
