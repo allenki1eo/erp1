@@ -1,6 +1,9 @@
+import Link from "next/link";
+import { Eye } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { DeleteButton } from "@/components/crud/delete-button";
@@ -55,7 +58,7 @@ export default async function BrewsPage() {
                 <TableHead className="text-right">Actual</TableHead>
                 <TableHead className="hidden md:table-cell">ABV</TableHead>
                 <TableHead className="hidden md:table-cell">Start</TableHead>
-                <TableHead className="w-24 text-right">Actions</TableHead>
+                <TableHead className="w-32 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -78,6 +81,11 @@ export default async function BrewsPage() {
                   </TableCell>
                   <TableCell className="hidden md:table-cell text-xs">{formatDate(brew.startDate)}</TableCell>
                   <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" asChild title="View BOM &amp; details">
+                      <Link href={`/production/brews/${brew.id}`}>
+                        <Eye className="size-4" />
+                      </Link>
+                    </Button>
                     <BrewDialog
                       brew={{
                         id: brew.id,

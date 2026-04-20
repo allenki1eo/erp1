@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import {
   brews, distillations, distillationCuts, barrels, agingBatches,
-  bottlingRuns, products, recipes,
+  bottlingRuns, products, recipes, brewMaterialUsage, recipeItems,
 } from "@/db/schema";
 import { getActiveCompanyId } from "@/lib/tenant";
 import { requirePermission, PERMISSIONS } from "@/lib/rbac";
@@ -383,6 +383,99 @@ export async function listRecipesForSelect(productClass?: string) {
     .where(and(...conditions))
     .orderBy(recipes.name);
   return productClass ? rows.filter((r) => r.productClass === productClass) : rows;
+}
+
+// ============================================================
+// BREW DETAIL + MATERIAL USAGE
+// ============================================================
+export async function getBrew(id: string) {
+  const companyId = await getActiveCompanyId();
+  if (!companyId) return null;
+  const [row] = await db.select({
+    brew: brews,
+    product: { id: products.id, sku: products.sku, name: products.name },
+    recipe: { id: recipes.id, name: recipes.name, version: recipes.version, expectedYield: recipes.expectedYield },
+  })
+    .from(brews)
+    .leftJoin(products, eq(brews.productId, products.id))
+    .leftJoin(recipes, eq(brews.recipeId, recipes.id))
+    .where(and(eq(brews.id, id), eq(brews.companyId, companyId)));
+  return row ?? null;
+}
+
+export async function getBomForBrew(brewId: string) {
+  const companyId = await getActiveCompanyId();
+  if (!companyId) return [];
+  const [brew] = await db.select().from(brews)
+    .where(and(eq(brews.id, brewId), eq(brews.companyId, companyId)));
+  if (!brew?.recipeId) return [];
+
+  return db.select({
+    item: recipeItems,
+    product: { id: products.id, sku: products.sku, name: products.name, uom: products.uom },
+  })
+    .from(recipeItems)
+    .leftJoin(products, eq(recipeItems.productId, products.id))
+    .where(eq(recipeItems.recipeId, brew.recipeId))
+    .orderBy(recipeItems.stage, products.name);
+}
+
+export async function listBrewMaterialUsage(brewId: string) {
+  const companyId = await getActiveCompanyId();
+  if (!companyId) return [];
+  const [brew] = await db.select().from(brews)
+    .where(and(eq(brews.id, brewId), eq(brews.companyId, companyId)));
+  if (!brew) return [];
+  return db.select({
+    usage: brewMaterialUsage,
+    product: { id: products.id, sku: products.sku, name: products.name },
+  })
+    .from(brewMaterialUsage)
+    .leftJoin(products, eq(brewMaterialUsage.productId, products.id))
+    .where(eq(brewMaterialUsage.brewId, brewId))
+    .orderBy(brewMaterialUsage.stage, products.name);
+}
+
+const MaterialUsageSchema = z.object({
+  brewId: z.string().min(1),
+  productId: z.string().min(1, "Ingredient required"),
+  qty: z.preprocess((v) => Number(v), z.number().positive("Quantity must be positive")),
+  uom: z.string().min(1, "UoM required"),
+  stage: strOpt,
+});
+
+export async function addBrewMaterialUsage(_: ActionResult | null, formData: FormData): Promise<ActionResult> {
+  await requirePermission(PERMISSIONS.PRODUCTION_MANAGE);
+  const companyId = await getActiveCompanyId();
+  if (!companyId) return { ok: false, error: "No active company" };
+  const parsed = fromFormData(MaterialUsageSchema, formData);
+  if (!parsed.success) return errorFromParse(parsed);
+  const { brewId, ...data } = parsed.data;
+
+  const [brew] = await db.select().from(brews)
+    .where(and(eq(brews.id, brewId), eq(brews.companyId, companyId)));
+  if (!brew) return { ok: false, error: "Brew not found" };
+
+  await db.insert(brewMaterialUsage).values({ brewId, ...data });
+  revalidatePath(`/production/brews/${brewId}`);
+  return { ok: true };
+}
+
+export async function deleteBrewMaterialUsage(id: string): Promise<ActionResult> {
+  await requirePermission(PERMISSIONS.PRODUCTION_MANAGE);
+  const companyId = await getActiveCompanyId();
+  if (!companyId) return { ok: false, error: "No active company" };
+
+  const [row] = await db.select().from(brewMaterialUsage).where(eq(brewMaterialUsage.id, id));
+  if (!row) return { ok: false, error: "Usage record not found" };
+
+  const [brew] = await db.select().from(brews)
+    .where(and(eq(brews.id, row.brewId), eq(brews.companyId, companyId)));
+  if (!brew) return { ok: false, error: "Forbidden" };
+
+  await db.delete(brewMaterialUsage).where(eq(brewMaterialUsage.id, id));
+  revalidatePath(`/production/brews/${row.brewId}`);
+  return { ok: true };
 }
 
 export async function productionStats() {
