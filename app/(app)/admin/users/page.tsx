@@ -8,10 +8,44 @@ import { EmptyState } from "@/components/empty-state";
 import { DeleteButton } from "@/components/crud/delete-button";
 import { formatDate } from "@/lib/utils";
 import { listCompanyUsers, listRolesForCompany, removeUserFromCompany } from "@/server/actions/admin";
+import { getActiveCompanyId, getCurrentRole } from "@/lib/tenant";
 import { UserDialog } from "./user-dialog";
 
 export default async function AdminUsersPage() {
-  const [rows, roles] = await Promise.all([listCompanyUsers(), listRolesForCompany()]);
+  const [rows, roles, companyId, role] = await Promise.all([
+    listCompanyUsers(),
+    listRolesForCompany(),
+    getActiveCompanyId(),
+    getCurrentRole(),
+  ]);
+
+  // Not yet bootstrapped: no company or no role assigned.
+  if (!companyId || !role) {
+    return (
+      <div className="space-y-4">
+        <PageHeader
+          title="Users & access"
+          description="Finish initial setup to manage team members."
+        />
+        <Card className="p-6 text-sm space-y-3">
+          <div className="font-medium">Setup required</div>
+          <p className="text-muted-foreground">
+            Your account is not yet linked to a company with admin permissions.
+            If you have set <code className="font-mono">ADMIN_EMAIL</code> to your
+            email in Vercel, visit the setup endpoint below to finish provisioning.
+          </p>
+          <div>
+            <Button asChild>
+              <Link href="/api/setup">Run admin setup</Link>
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            After setup, sign out and sign back in to refresh your session.
+          </p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

@@ -7,14 +7,14 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { users, roles, userCompanies } from "@/db/schema";
 import { getActiveCompanyId, getCurrentUser } from "@/lib/tenant";
-import { requirePermission, PERMISSIONS, ROLE_PRESETS, type Permission } from "@/lib/rbac";
+import { hasPermission, requirePermission, PERMISSIONS, ROLE_PRESETS, type Permission } from "@/lib/rbac";
 import { errorFromParse, fromFormData, type ActionResult } from "@/lib/actions";
 
 // ============================================================
 // LIST / READ
 // ============================================================
 export async function listCompanyUsers() {
-  await requirePermission(PERMISSIONS.USER_MANAGE);
+  if (!(await hasPermission(PERMISSIONS.USER_MANAGE))) return [];
   const companyId = await getActiveCompanyId();
   if (!companyId) return [];
   return db

@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { users, accounts, sessions, verificationTokens } from "@/db/schema";
+import { ensureAdminBootstrap } from "@/lib/bootstrap";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DrizzleAdapter(db, {
@@ -39,7 +40,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.id = user.id;
+      if (user) {
+        token.id = user.id;
+        if (user.email && user.id) {
+          try {
+            await ensureAdminBootstrap(user.id, user.email);
+          } catch (err) {
+            console.error("ensureAdminBootstrap failed", err);
+          }
+        }
+      }
       return token;
     },
     async session({ session, token }) {
