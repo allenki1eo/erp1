@@ -102,10 +102,10 @@ export function TemplateDialog({ template, products }: { template?: Template; pr
             </div>
             <div>
               <Label htmlFor="productId">Specific product</Label>
-              <Select name="productId" defaultValue={template?.productId ?? ""}>
+              <Select name="productId" defaultValue={template?.productId ?? "__none"}>
                 <SelectTrigger><SelectValue placeholder="— any —" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">— any —</SelectItem>
+                  <SelectItem value="__none">— any —</SelectItem>
                   {products.map((p) => (
                     <SelectItem key={p.id} value={p.id}>{p.name} ({p.sku})</SelectItem>
                   ))}

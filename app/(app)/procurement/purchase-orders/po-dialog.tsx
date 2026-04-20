@@ -91,12 +91,12 @@ export function PODialog({
 
           <div>
             <Label htmlFor="warehouseId">Deliver to Warehouse</Label>
-            <Select name="warehouseId" defaultValue={po?.warehouseId ?? ""}>
+            <Select name="warehouseId" defaultValue={po?.warehouseId ?? "__none"}>
               <SelectTrigger>
                 <SelectValue placeholder="Select warehouse…" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">— None —</SelectItem>
+                <SelectItem value="__none">— None —</SelectItem>
                 {warehouses.map((w) => (
                   <SelectItem key={w.id} value={w.id}>
                     {w.code} — {w.name}

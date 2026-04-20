@@ -4,31 +4,36 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { DeleteButton } from "@/components/crud/delete-button";
-import { listAllCompanies, deleteCompany, listMyCompanies, getActiveCompany } from "@/server/actions/companies";
+import { listAllCompaniesSafe, deleteCompany, listMyCompanies, getActiveCompany } from "@/server/actions/companies";
 import { CompanyDialog } from "./company-dialog";
 
 export default async function CompaniesPage() {
   const [rows, mine, active] = await Promise.all([
-    listAllCompanies(),
+    listAllCompaniesSafe(),
     listMyCompanies(),
     getActiveCompany(),
   ]);
+  const isAdmin = rows !== null;
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Companies"
-        description="Manage tenant companies, branches, and legal information."
-        action={<CompanyDialog />}
+        description={isAdmin
+          ? "Manage tenant companies, branches, and legal information."
+          : "Companies you belong to."}
+        action={isAdmin ? <CompanyDialog /> : null}
       />
 
-      {rows.length === 0 ? (
+      {isAdmin && rows.length === 0 && (
         <EmptyState
           title="No companies yet"
           description="Create your first company to get started."
           action={<CompanyDialog />}
         />
-      ) : (
+      )}
+
+      {isAdmin && rows.length > 0 && (
         <Card className="overflow-hidden">
           <Table>
             <TableHeader>
@@ -77,10 +82,10 @@ export default async function CompaniesPage() {
         </Card>
       )}
 
-      {mine.length > 0 && (
+      {mine.length > 0 ? (
         <Card className="p-6">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Companies you belong to
+            {isAdmin ? "Companies you belong to" : "Your companies"}
           </h2>
           <ul className="space-y-2 text-sm">
             {mine.map(({ company, link }) => (
@@ -99,7 +104,12 @@ export default async function CompaniesPage() {
             ))}
           </ul>
         </Card>
-      )}
+      ) : !isAdmin ? (
+        <EmptyState
+          title="No companies"
+          description="You are not a member of any company yet. Ask an administrator to invite you."
+        />
+      ) : null}
     </div>
   );
 }

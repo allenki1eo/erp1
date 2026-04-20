@@ -103,10 +103,10 @@ export function RollDialog({ roll, warehouses }: { roll?: Roll; warehouses: Ware
           </div>
           <div>
             <Label htmlFor="warehouseId">Warehouse</Label>
-            <Select name="warehouseId" defaultValue={roll?.warehouseId ?? ""}>
+            <Select name="warehouseId" defaultValue={roll?.warehouseId ?? "__none"}>
               <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">— none —</SelectItem>
+                <SelectItem value="__none">— none —</SelectItem>
                 {warehouses.map((w) => (
                   <SelectItem key={w.id} value={w.id}>{w.name} ({w.code})</SelectItem>
                 ))}
