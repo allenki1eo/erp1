@@ -40,7 +40,7 @@ export function CheckDialog({ templates, refsByType }: { templates: Template[]; 
   const [open, setOpen] = useState(false);
   const [state, action] = useActionState(recordCheck, null);
   const [refType, setRefType] = useState("BREW");
-  const [templateId, setTemplateId] = useState<string>("");
+  const [templateId, setTemplateId] = useState<string>("__none");
 
   useEffect(() => {
     if (state?.ok) {
@@ -50,7 +50,7 @@ export function CheckDialog({ templates, refsByType }: { templates: Template[]; 
   }, [state]);
 
   const currentTemplate = useMemo(
-    () => templates.find((t) => t.tpl.id === templateId)?.tpl,
+    () => templateId === "__none" ? undefined : templates.find((t) => t.tpl.id === templateId)?.tpl,
     [templates, templateId],
   );
 
@@ -105,7 +105,7 @@ export function CheckDialog({ templates, refsByType }: { templates: Template[]; 
             <Select name="templateId" value={templateId} onValueChange={setTemplateId}>
               <SelectTrigger><SelectValue placeholder="No template" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">— none —</SelectItem>
+                <SelectItem value="__none">— none —</SelectItem>
                 {relevantTemplates.map((t) => (
                   <SelectItem key={t.tpl.id} value={t.tpl.id}>
                     {t.tpl.name} ({t.tpl.checkType}{t.tpl.stage ? ` · ${t.tpl.stage}` : ""})

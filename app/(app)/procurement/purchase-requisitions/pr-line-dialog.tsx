@@ -77,12 +77,12 @@ export function PRLineDialog({
 
           <div>
             <Label htmlFor="productId">Product (optional)</Label>
-            <Select name="productId" defaultValue={line?.productId ?? ""}>
+            <Select name="productId" defaultValue={line?.productId ?? "__none"}>
               <SelectTrigger>
                 <SelectValue placeholder="Select product…" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">— None —</SelectItem>
+                <SelectItem value="__none">— None —</SelectItem>
                 {products.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.sku} — {p.name}

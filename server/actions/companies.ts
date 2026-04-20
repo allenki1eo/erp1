@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { companies, userCompanies } from "@/db/schema";
 import { getActiveCompanyId, getCurrentUser } from "@/lib/tenant";
-import { requirePermission, PERMISSIONS } from "@/lib/rbac";
+import { requirePermission, hasPermission, PERMISSIONS } from "@/lib/rbac";
 import { errorFromParse, fromFormData, type ActionResult } from "@/lib/actions";
 
 const UpsertSchema = z.object({
@@ -43,6 +43,11 @@ export async function listMyCompanies() {
 
 export async function listAllCompanies() {
   await requirePermission(PERMISSIONS.COMPANY_MANAGE);
+  return db.select().from(companies).orderBy(companies.name);
+}
+
+export async function listAllCompaniesSafe() {
+  if (!(await hasPermission(PERMISSIONS.COMPANY_MANAGE))) return null;
   return db.select().from(companies).orderBy(companies.name);
 }
 

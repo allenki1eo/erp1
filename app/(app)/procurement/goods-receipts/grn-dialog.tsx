@@ -78,12 +78,12 @@ export function GRNDialog({
 
           <div>
             <Label htmlFor="poId">Against Purchase Order (optional)</Label>
-            <Select name="poId" defaultValue={grn?.poId ?? ""}>
+            <Select name="poId" defaultValue={grn?.poId ?? "__none"}>
               <SelectTrigger>
                 <SelectValue placeholder="— None —" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">— None —</SelectItem>
+                <SelectItem value="__none">— None —</SelectItem>
                 {pos.map((p) => (
                   <SelectItem key={p.id} value={p.id}>{p.number}</SelectItem>
                 ))}

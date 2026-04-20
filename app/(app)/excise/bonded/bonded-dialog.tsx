@@ -110,10 +110,10 @@ export function BondedDialog({
             {showDestination && (
               <div>
                 <Label htmlFor="destinationWarehouseId">Destination</Label>
-                <Select name="destinationWarehouseId">
+                <Select name="destinationWarehouseId" defaultValue="__none">
                   <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">— none —</SelectItem>
+                    <SelectItem value="__none">— none —</SelectItem>
                     {allWarehouses.map((w) => (
                       <SelectItem key={w.id} value={w.id}>{w.name} ({w.code})</SelectItem>
                     ))}
