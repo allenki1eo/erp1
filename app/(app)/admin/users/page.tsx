@@ -8,9 +8,11 @@ import { EmptyState } from "@/components/empty-state";
 import { DeleteButton } from "@/components/crud/delete-button";
 import { formatDate } from "@/lib/utils";
 import { listCompanyUsers, listRolesForCompany, removeUserFromCompany } from "@/server/actions/admin";
+import { requirePermissionOrRedirect, PERMISSIONS } from "@/lib/rbac";
 import { UserDialog } from "./user-dialog";
 
 export default async function AdminUsersPage() {
+  await requirePermissionOrRedirect(PERMISSIONS.USER_MANAGE);
   const [rows, roles] = await Promise.all([listCompanyUsers(), listRolesForCompany()]);
 
   return (

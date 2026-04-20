@@ -6,8 +6,9 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from 
 import { Button } from "@/components/ui/button";
 import { SidebarNav } from "./sidebar-nav";
 import { VisuallyHidden } from "./visually-hidden";
+import type { NavSection } from "./nav-config";
 
-export function MobileNav() {
+export function MobileNav({ sections }: { sections: NavSection[] }) {
   const [open, setOpen] = useState(false);
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -24,7 +25,7 @@ export function MobileNav() {
         <div className="flex h-14 items-center border-b px-4">
           <span className="text-base font-semibold">Beverage ERP</span>
         </div>
-        <SidebarNav onNavigate={() => setOpen(false)} />
+        <SidebarNav sections={sections} onNavigate={() => setOpen(false)} />
       </SheetContent>
     </Sheet>
   );

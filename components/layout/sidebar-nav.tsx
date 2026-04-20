@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { NAV, isGroup, type NavGroup, type NavLeaf } from "./nav-config";
+import { isGroup, type NavGroup, type NavLeaf, type NavSection } from "./nav-config";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 function Leaf({ item, onNavigate }: { item: NavLeaf; onNavigate?: () => void }) {
@@ -80,10 +80,16 @@ function Group({ group, onNavigate }: { group: NavGroup; onNavigate?: () => void
   );
 }
 
-export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+export function SidebarNav({
+  sections,
+  onNavigate,
+}: {
+  sections: NavSection[];
+  onNavigate?: () => void;
+}) {
   return (
     <nav className="flex flex-col gap-5 px-3 py-4">
-      {NAV.map((section) => (
+      {sections.map((section) => (
         <div key={section.label}>
           <h4 className="mb-2 px-3 text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground">
             {section.label}

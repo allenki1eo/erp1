@@ -5,8 +5,9 @@ import { signOut } from "@/lib/auth";
 import { getCurrentUser, getUserCompanies, getActiveCompanyId } from "@/lib/tenant";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
+import type { NavSection } from "./nav-config";
 
-export async function Topbar() {
+export async function Topbar({ sections }: { sections: NavSection[] }) {
   const user = await getCurrentUser();
   const companies = await getUserCompanies();
   const activeId = await getActiveCompanyId();
@@ -14,7 +15,7 @@ export async function Topbar() {
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b bg-background px-3 sm:px-6">
       <div className="flex items-center gap-2 min-w-0">
-        <MobileNav />
+        <MobileNav sections={sections} />
         <CompanySwitcher
           companies={companies.map((c) => ({ id: c.company.id, name: c.company.name }))}
           activeId={activeId}

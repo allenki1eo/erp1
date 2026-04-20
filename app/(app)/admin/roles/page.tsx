@@ -6,9 +6,11 @@ import { EmptyState } from "@/components/empty-state";
 import { DeleteButton } from "@/components/crud/delete-button";
 import { ActionButton } from "@/components/crud/action-button";
 import { listRolesForCompany, deleteRole, seedRolePresets } from "@/server/actions/admin";
+import { requirePermissionOrRedirect, PERMISSIONS } from "@/lib/rbac";
 import { RoleDialog } from "./role-dialog";
 
 export default async function AdminRolesPage() {
+  await requirePermissionOrRedirect(PERMISSIONS.USER_MANAGE);
   const roles = await listRolesForCompany();
 
   return (
