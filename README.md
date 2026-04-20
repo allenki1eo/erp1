@@ -1,4 +1,4 @@
-# Beverage ERP
+# ACERP
 
 Multi-company ERP for beer & spirits production. Tanzania-tax aware.
 
